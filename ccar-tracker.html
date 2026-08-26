@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CCAR-F Route Card</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --void:#161A20; --panel:#1D222A; --panel-2:#232933; --panel-3:#1A1F26;
+  --edge:#2F3742; --text:#E3E7EC; --dim:#8A95A3; --dimmer:#5D6874;
+  --gold:#E5A93F; --teal:#4FB6C4; --lilac:#9B93D6; --rose:#D2726B;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--void);color:var(--text);
+  font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:800px;margin:0 auto;padding:28px 18px 80px}
+h1,h2,h3{font-family:"Space Grotesk",sans-serif;font-weight:700;letter-spacing:-.02em;line-height:1.1;margin:0}
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
+
+header{padding-bottom:22px;border-bottom:1px solid var(--edge)}
+h1{font-size:clamp(26px,6vw,38px);margin:10px 0 14px}
+.meter{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.track{flex:1;min-width:170px;height:8px;background:var(--panel-2);border-radius:99px;overflow:hidden}
+.fill{height:100%;width:0;background:linear-gradient(90deg,var(--teal),var(--gold));border-radius:99px;transition:width .45s cubic-bezier(.4,0,.2,1)}
+.count{font-family:"IBM Plex Mono",monospace;font-size:13px;font-weight:600;color:var(--dim);white-space:nowrap}
+.count b{color:var(--text);font-size:17px}
+.status{margin-top:12px;font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--dimmer);letter-spacing:.04em}
+
+.key{display:flex;gap:16px;margin-top:14px;flex-wrap:wrap;font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--dimmer)}
+.key span{display:flex;align-items:center;gap:6px}
+.key i{width:8px;height:8px;border-radius:2px;display:block}
+
+.banner{display:none;margin-top:16px;padding:13px 15px;border-radius:5px;
+  background:rgba(210,114,107,.10);border:1px solid rgba(210,114,107,.32);font-size:13.5px;color:var(--text)}
+.banner.on{display:block}
+.banner b{color:var(--rose);font-weight:600}
+.banner p{margin:6px 0 0;color:var(--dim);font-size:13px}
+.banner .diag{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--dimmer);
+  word-break:break-word;padding-top:8px;margin-top:9px;border-top:1px solid rgba(210,114,107,.22)}
+.banner .diag:empty{display:none}
+.toolbar{display:flex;gap:9px;margin-top:16px;flex-wrap:wrap}
+button{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  background:transparent;color:var(--dim);border:1px solid var(--edge);border-radius:4px;
+  padding:7px 12px;cursor:pointer;transition:all .18s}
+button:hover{color:var(--text);border-color:var(--dimmer)}
+button.danger:hover{color:var(--rose);border-color:var(--rose)}
+button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+.spine{position:relative;margin-top:30px;padding-left:30px}
+.spine::before{content:"";position:absolute;left:7px;top:6px;bottom:6px;width:2px;background:var(--edge)}
+.stage{position:relative;margin-bottom:30px}
+.node{position:absolute;left:-30px;top:3px;width:16px;height:16px;border-radius:50%;
+  background:var(--void);border:2px solid var(--edge);transition:all .3s}
+.stage.active .node{border-color:var(--gold);box-shadow:0 0 0 4px rgba(229,169,63,.14)}
+.stage.done .node{border-color:var(--teal);background:var(--teal)}
+.stage-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:3px}
+.stage-head h3{font-size:17px}
+.stage.done .stage-head h3{color:var(--dim)}
+.weeks{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--dimmer);margin-left:auto}
+.stage-note{font-size:13.5px;color:var(--dim);margin:0 0 12px}
+
+.tasks{list-style:none;margin:0;padding:0}
+.task{background:var(--panel);border:1px solid transparent;border-radius:5px;margin-bottom:6px;transition:border-color .15s}
+.task.open{border-color:var(--edge)}
+.row{display:flex;gap:11px;align-items:flex-start;padding:10px 11px}
+.row:hover{background:var(--panel-2);border-radius:5px}
+.task.open .row{background:var(--panel-2);border-radius:5px 5px 0 0}
+.row input[type=checkbox]{appearance:none;-webkit-appearance:none;flex:0 0 auto;
+  width:17px;height:17px;margin:2px 0 0;border:1.5px solid var(--dimmer);border-radius:3px;
+  background:transparent;cursor:pointer;position:relative;transition:all .18s}
+.row input:checked{background:var(--teal);border-color:var(--teal)}
+.row input:checked::after{content:"";position:absolute;left:5px;top:1px;width:4px;height:9px;
+  border:solid var(--void);border-width:0 2px 2px 0;transform:rotate(42deg)}
+.row input:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.expand{flex:1;text-align:left;background:none;border:none;padding:0;margin:0;cursor:pointer;
+  font-family:"IBM Plex Sans",sans-serif;font-size:14.5px;letter-spacing:0;text-transform:none;color:var(--text);line-height:1.5}
+.expand:hover{color:var(--text);border:none}
+.task.checked .expand{color:var(--dimmer);text-decoration:line-through;text-decoration-color:var(--edge)}
+.chev{flex:0 0 auto;width:18px;height:18px;margin-top:1px;color:var(--dimmer);transition:transform .22s;pointer-events:none}
+.task.open .chev{transform:rotate(90deg);color:var(--gold)}
+.dot{flex:0 0 auto;width:6px;height:6px;border-radius:50%;background:var(--gold);margin-top:8px}
+.pill{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+  padding:2px 6px;border-radius:3px;background:var(--panel-3);color:var(--dim);
+  border:1px solid var(--edge);white-space:nowrap;margin-top:2px}
+.pill.opt{color:var(--dimmer)}
+.pill.gate{background:rgba(210,114,107,.13);color:var(--rose);border-color:rgba(210,114,107,.3)}
+.pill.build{background:rgba(229,169,63,.12);color:var(--gold);border-color:rgba(229,169,63,.28)}
+
+.detail{padding:4px 14px 16px 39px;border-top:1px solid var(--edge);background:var(--panel-3);border-radius:0 0 5px 5px}
+.field{margin-top:13px}
+.field dt{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--dimmer);margin-bottom:4px}
+.field dd{margin:0;font-size:14px;color:var(--dim)}
+.clock{font-family:"IBM Plex Mono",monospace;color:var(--gold);font-size:13.5px}
+
+.links{display:flex;flex-direction:column;gap:5px;margin-top:2px}
+.lk{display:inline-flex;align-items:baseline;gap:8px;text-decoration:none;padding:6px 9px;
+  background:var(--panel);border:1px solid var(--edge);border-radius:4px;font-size:13.5px;color:var(--text);
+  transition:border-color .15s,transform .15s}
+.lk:hover{transform:translateX(2px)}
+.lk .cat{font-family:"IBM Plex Mono",monospace;font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;
+  padding:2px 5px;border-radius:2px;flex:0 0 auto;position:relative;top:-1px}
+.lk.install .cat{background:rgba(79,182,196,.15);color:var(--teal)}
+.lk.install:hover{border-color:var(--teal)}
+.lk.read .cat{background:rgba(155,147,214,.15);color:var(--lilac)}
+.lk.read:hover{border-color:var(--lilac)}
+.lk.watch .cat{background:rgba(229,169,63,.14);color:var(--gold)}
+.lk.watch:hover{border-color:var(--gold)}
+
+textarea{width:100%;min-height:72px;margin-top:4px;padding:10px 11px;resize:vertical;
+  background:var(--panel);color:var(--text);border:1px solid var(--edge);border-radius:4px;
+  font-family:"IBM Plex Sans",sans-serif;font-size:14px;line-height:1.5}
+textarea::placeholder{color:var(--dimmer)}
+textarea:focus{outline:none;border-color:var(--gold)}
+
+footer{margin-top:44px;padding-top:20px;border-top:1px solid var(--edge)}
+footer p{margin:0 0 8px;font-size:12.5px;color:var(--dimmer)}
+.loading{padding:40px 0;text-align:center;color:var(--dim);font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.1em}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (max-width:520px){.detail{padding-left:14px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Claude Certified Architect — Foundations</div>
+  <h1>Route card</h1>
+  <div class="meter">
+    <div class="track"><div class="fill" id="fill"></div></div>
+    <div class="count"><b id="done">0</b> / <span id="total">0</span> done</div>
+  </div>
+  <div class="status" id="status">Loading your progress…</div>
+  <div class="key">
+    <span><i style="background:#4FB6C4"></i> Install</span>
+    <span><i style="background:#9B93D6"></i> Read</span>
+    <span><i style="background:#E5A93F"></i> Watch spend</span>
+  </div>
+  <div class="banner" id="banner">
+    <b>Saving is off in this context.</b>
+    <p>Everything below still works. Your progress just lives in this tab, so use <b>Export</b> before you close it and <b>Import</b> when you come back. The file is small and drops into your Downloads folder.</p>
+    <p class="diag" id="diag"></p>
+  </div>
+  <div class="toolbar">
+    <button id="expandAll">Expand all</button>
+    <button id="collapseAll">Collapse all</button>
+    <button id="exportBtn">Export</button>
+    <button id="importBtn">Import</button>
+    <button id="reset" class="danger">Clear everything</button>
+  </div>
+  <input type="file" id="importFile" accept="application/json,.json" style="display:none">
+</header>
+
+<div id="app"><div class="loading">Reading saved progress…</div></div>
+
+<footer>
+  <p>Checkmarks and notes save automatically to this artifact and are private to you. Time estimates are rough — course lengths in particular vary.</p>
+  <p>Anthropic's developer docs moved to platform.claude.com and code.claude.com. Older anthropic.com/docs links still circulate and mostly redirect, but these are the current homes.</p>
+</footer>
+
+</div>
+
+<script>
+const KEY = "ccar_route_v3";
+
+// Shared destinations
+const L = {
+  console:      ["watch","Claude Console — keys, usage, cost","https://console.anthropic.com"],
+  costDocs:     ["watch","Cost and usage reporting in the Console","https://support.claude.com/en/articles/9534590-cost-and-usage-reporting-in-the-claude-console"],
+  usageApi:     ["watch","Usage and Cost API","https://platform.claude.com/docs/en/manage-claude/usage-cost-api"],
+  ccCosts:      ["watch","Claude Code — manage costs","https://code.claude.com/docs/en/costs"],
+  ghBilling:    ["watch","GitHub billing and Actions minutes","https://github.com/settings/billing"],
+  docsHome:     ["read","Claude Platform docs — home","https://platform.claude.com/docs/en/home"],
+  apiOverview:  ["read","Claude API overview","https://platform.claude.com/docs/en/api/overview"],
+  buildOverview:["read","Building with Claude — features overview","https://docs.anthropic.com/en/docs/build-with-claude/overview"],
+  toolUse:      ["read","Tool use with Claude","https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview"],
+  toolRef:      ["read","Tool reference and definition properties","https://platform.claude.com/docs/en/agents-and-tools/tool-use/tool-reference"],
+  models:       ["read","Models overview","https://platform.claude.com/docs/en/about-claude/models/overview"],
+  ccDocs:       ["read","Claude Code docs — overview","https://code.claude.com/docs/en/overview"],
+  ccMemory:     ["read","Claude Code memory — CLAUDE.md and rules","https://code.claude.com/docs/en/memory"],
+  ccHooks:      ["read","Claude Code hooks","https://code.claude.com/docs/en/hooks"],
+  mcpSite:      ["read","Model Context Protocol — specification and guides","https://modelcontextprotocol.io"],
+  examGuide:    ["read","CCAR-F exam guide (PDF)","https://everpath-course-content.s3-accelerate.amazonaws.com/instructor%2F6nizmqk8tpzpfjvt6qmmav7rh%2Fpublic%2F1783542750%2FClaude+Certified+Architect+%E2%80%93+Foundations+Exam+Guide.pdf"],
+  academy:      ["read","Anthropic Academy — full course catalog","https://anthropic.skilljar.com/"],
+  pearson:      ["read","Pearson VUE — Anthropic exam program","https://www.pearsonvue.com/us/en/anthropic.html"],
+  partnerCerts: ["read","Partner Academy — certifications","https://anthropic-partners.skilljar.com/page/partner-certifications"],
+  certBlog:     ["read","Anthropic — four role-based certifications","https://claude.com/blog/four-role-based-claude-certifications"],
+  ccInstall:    ["install","Claude Code — install and quickstart","https://code.claude.com/docs/en/overview"],
+  ccRepo:       ["install","claude-code on GitHub","https://github.com/anthropics/claude-code"],
+  node:         ["install","Node.js downloads","https://nodejs.org/en/download"],
+  git:          ["install","Git downloads","https://git-scm.com/downloads"],
+  sdkPy:        ["install","Anthropic Python SDK","https://github.com/anthropics/anthropic-sdk-python"],
+  sdkTs:        ["install","Anthropic TypeScript SDK","https://github.com/anthropics/anthropic-sdk-typescript"],
+  pydantic:     ["install","Pydantic — install and docs","https://docs.pydantic.dev/latest/"],
+  mcpPy:        ["install","MCP Python SDK","https://github.com/modelcontextprotocol/python-sdk"],
+  mcpServers:   ["install","Reference MCP servers","https://github.com/modelcontextprotocol/servers"]
+};
+
+const PLAN = [
+{ id:"s0", name:"Week zero — setup", weeks:"This week", active:true,
+  note:"Accounts, tools, an empty repo, and the two orientation courses. Nothing here takes longer than an evening.",
+  tasks:[
+  {id:"t01", label:"Read the CCAR-F exam guide end to end",
+   why:"This is the only document that states what the exam actually measures, and its out-of-scope appendix is unusually generous — fine-tuning, vector databases, cloud configuration, streaming and prompt caching internals are all excluded. Reading it first saves weeks of studying things that will never be tested.",
+   dep:"None. Public PDF, no account needed.", time:"60–90 minutes",
+   links:[L.examGuide, L.certBlog, L.pearson]},
+  {id:"t02", label:"Create an Anthropic Console account and generate an API key",
+   why:"Everything from Stage 02 onward requires calling the API yourself. Reading about tool use teaches you the vocabulary; running it is what makes the behaviour stick.",
+   dep:"An email address and a payment method.", time:"15 minutes",
+   tip:"Set a low monthly spend limit while learning. Costs are single-digit dollars, and a runaway loop in week 6 is a real thing that happens.",
+   links:[L.console, L.costDocs, L.apiOverview]},
+  {id:"t03", label:"Install Claude Code and run one session",
+   why:"Twenty percent of the exam is Claude Code configuration, and the concepts only make sense once you have watched it read and edit files. Installing now removes friction later.",
+   dep:"Node.js on your machine, and the API key from the previous task.", time:"30 minutes",
+   tip:"Point it at any existing folder. The goal is seeing it work, not building anything.",
+   links:[L.node, L.ccInstall, L.ccRepo, L.ccCosts]},
+  {id:"t04", label:"Create the empty project repo",
+   why:"Every project in the build plan lives in this one repository, and starting it now means you accumulate a real commit history rather than dropping four finished demos in at the end. Hiring managers read commit history.",
+   dep:"Git installed and a GitHub account.", time:"20 minutes",
+   tip:"A README, a docs/decisions/ folder, and one commit. That is the entire task.",
+   links:[L.git, ["read","GitHub — start a repository","https://docs.github.com/en/get-started/quickstart/create-a-repo"]]},
+  {id:"t05", label:"Pick your document domain and write ADR-000",
+   why:"Committing to a domain now prevents the restarts that kill these projects around week 8. Writing it as an architecture decision record also establishes the habit that ends up doing more hiring work than any of your code.",
+   dep:"The repo from the previous task.", time:"45 minutes",
+   tip:"Criteria: public, messy, numeric, plentiful. Company filings, municipal budgets, FOIA packets and clinical trial records all qualify.",
+   links:[["read","Architecture decision records — organisation and templates","https://adr.github.io/"],
+          ["read","SEC EDGAR full-text search — a source of messy public filings","https://efts.sec.gov/LATEST/search-index?q=&dateRange=custom"]]},
+  {id:"t06", label:"Course — Claude 101",
+   why:"Establishes the shared vocabulary the later courses assume. Short enough that skipping it saves nothing.",
+   dep:"None. Free and public.", time:"About 1 hour",
+   links:[["read","Claude 101","https://anthropic.skilljar.com/claude-101"], L.academy]},
+  {id:"t07", label:"Course — AI Fluency: Framework & Foundations",
+   why:"Anthropic's own framework for working with these systems, referenced throughout the rest of the catalog. It also gives you language for the stakeholder conversations an architect ends up having.",
+   dep:"None. Free and public.", time:"2–3 hours",
+   links:[["read","AI Fluency: Framework & Foundations","https://anthropic.skilljar.com/ai-fluency-framework-foundations"]]},
+  {id:"t08", label:"Start a running list of partner-network leads", pill:"gate",
+   why:"The exam requires organizational affiliation and that is the slowest-moving part of this plan, so it should run in the background from day one rather than becoming a blocker in week 14.",
+   dep:"None.", time:"30 minutes, then ongoing",
+   tip:"Track firms in the network, contract openings, and anyone you know inside one. Certification volume commitments are large right now — Accenture 50,000, PwC 30,000, Deloitte 15,000.",
+   links:[L.partnerCerts, L.certBlog]}
+]},
+
+{ id:"s2", name:"Platform and API", weeks:"Weeks 1–2",
+  note:"The heaviest vocabulary load in the whole path. Tool use, stop_reason, JSON schemas, batching.",
+  tasks:[
+  {id:"t20", label:"Course — Claude Platform 101",
+   why:"Orients you to what the platform actually offers before you start making architecture decisions about it. Prevents the common mistake of building something the platform already provides.",
+   dep:"Week zero complete.", time:"1–2 hours",
+   links:[["read","Claude Platform 101","https://anthropic.skilljar.com/claude-platform-101"], L.docsHome, L.models]},
+  {id:"t21", label:"Course — Building with the Claude API",
+   why:"The single highest-value course on the path. Tool use, stop_reason, tool_choice, JSON schemas and the Batches API all appear on the exam and all underpin Projects 1 and 3.",
+   dep:"Working API key.", time:"4–6 hours",
+   tip:"Do the exercises rather than reading through. This is the material that only sticks by running it.",
+   links:[["read","Building with the Claude API","https://anthropic.skilljar.com/claude-with-the-anthropic-api"],
+          L.buildOverview, L.toolUse, L.sdkPy, L.sdkTs, L.console]},
+  {id:"t22", label:"Reread the glossary, Stage 02 section",
+   why:"Confirms the vocabulary landed, and turns the build plan from half-opaque into mostly readable. Anything still unclear becomes your specific study list rather than a vague sense of being behind.",
+   dep:"Both Stage 02 courses.", time:"30 minutes",
+   links:[L.toolRef, L.buildOverview]},
+  {id:"t23", label:"Write one script that calls a tool and loops on stop_reason",
+   why:"The agentic loop is the foundation of every project that follows, and the exam names three ways of getting it wrong. Building the smallest possible correct version now means you never build on a broken one.",
+   dep:"Building with the Claude API.", time:"2–3 hours",
+   tip:"Around fifty lines. Continue on tool_use, terminate on end_turn. No iteration caps, no parsing the text for the word 'done'.",
+   links:[L.toolUse, L.sdkPy, L.costDocs]}
+]},
+
+{ id:"s3", name:"Claude Code", weeks:"Weeks 3–4",
+  note:"Twenty percent of the exam, and the material most likely to be useful in an interview next month.",
+  tasks:[
+  {id:"t30", label:"Course — Claude Code 101",
+   why:"Covers the built-in tools and the basic working loop. Grep versus Glob, and when Edit needs unique anchor text, are both tested details that look trivial until you are asked about them under time pressure.",
+   dep:"Claude Code installed.", time:"1–2 hours",
+   links:[["read","Claude Code 101","https://anthropic.skilljar.com/claude-code-101"], L.ccDocs, L.ccCosts]},
+  {id:"t31", label:"Course — Claude Code in Action",
+   why:"The configuration material that Project 2 is built from — CLAUDE.md hierarchy, rules with path globs, slash commands, headless mode for CI. This is the course whose output you can show an employer next month.",
+   dep:"Claude Code 101.", time:"4–6 hours",
+   links:[["read","Claude Code in Action","https://anthropic.skilljar.com/claude-code-in-action"], L.ccMemory, L.ccHooks]},
+  {id:"t32", label:"Course — Introduction to agent skills",
+   why:"Skills are how reusable expertise gets packaged, and the frontmatter settings Project 2 exercises — context forking, tool restriction, argument hints — come straight from here.",
+   dep:"Claude Code in Action.", time:"1–2 hours",
+   links:[["read","Introduction to agent skills","https://anthropic.skilljar.com/introduction-to-agent-skills"], L.ccDocs]},
+  {id:"t33", label:"Course — Introduction to subagents",
+   why:"Feeds the exam's largest domain and all of Project 4. The critical idea is context isolation: subagents start clean and inherit nothing, which is the most common first-build bug.",
+   dep:"Introduction to agent skills.", time:"1–2 hours",
+   links:[["read","Introduction to subagents","https://anthropic.skilljar.com/introduction-to-subagents"], L.ccDocs]},
+  {id:"t34", label:"Reread the glossary, Stage 03 section",
+   why:"Consolidates the configuration vocabulary before you have to apply it in Project 2.",
+   dep:"All four Stage 03 courses.", time:"30 minutes",
+   links:[L.ccMemory]}
+]},
+
+{ id:"s4", name:"Model Context Protocol", weeks:"Week 5",
+  note:"How Claude connects to outside systems. Everything in Project 1 depends on this.",
+  tasks:[
+  {id:"t40", label:"Course — Introduction to Model Context Protocol",
+   why:"MCP is what makes your tools portable rather than welded to one script — an architecture concern, not an implementation detail, which is why it carries exam weight.",
+   dep:"Stage 02 complete.", time:"2–3 hours",
+   links:[["read","Introduction to Model Context Protocol","https://anthropic.skilljar.com/introduction-to-model-context-protocol"],
+          L.mcpSite, L.mcpPy, L.mcpServers]},
+  {id:"t41", label:"Course — MCP: Advanced Topics",
+   why:"Structured errors, the isError flag, server scoping across project and personal config, and hooks. Project 1's entire design argument comes from this course.",
+   dep:"Introduction to MCP.", time:"3–4 hours",
+   links:[["read","MCP: Advanced Topics","https://anthropic.skilljar.com/model-context-protocol-advanced-topics"], L.mcpSite, L.ccHooks]},
+  {id:"t42", label:"Reread the glossary, Stage 04 section",
+   why:"Last vocabulary checkpoint before you start building. At this point the build plan should read as familiar rather than opaque — if it does not, revisit before starting Project 1.",
+   dep:"Both MCP courses.", time:"30 minutes",
+   links:[L.mcpSite]}
+]},
+
+{ id:"p1", name:"Project 1 — Escalation agent", weeks:"Weeks 6–7",
+  note:"An agent with tools over your documents that knows when to stop and hand off.",
+  tasks:[
+  {id:"t50", label:"Define 3–4 MCP tools, two with deliberately overlapping surface", pill:"build",
+   why:"Tool descriptions are the only signal the model uses when choosing, so ambiguity between two similar tools is a genuine production failure mode and a favourite exam scenario. Building the ambiguity on purpose teaches you to resolve it.",
+   dep:"Stage 04 complete. Your documents in a queryable store.", time:"4–6 hours",
+   links:[L.toolUse, L.toolRef, L.mcpPy]},
+  {id:"t51", label:"Build the agentic loop on stop_reason", pill:"build",
+   why:"Correct termination is what separates an agent from a script. The three named anti-patterns — iteration caps as the primary stop, parsing text for completion phrases, treating any assistant text as done — all appear as wrong answers on the exam.",
+   dep:"The loop script from Stage 02.", time:"3–4 hours",
+   links:[L.toolUse, L.buildOverview, L.console]},
+  {id:"t52", label:"Add structured error responses with retryability", pill:"build",
+   why:"A generic failure leaves the agent no basis for deciding what to do next. Categorising errors as transient, validation, permission or business, and stating whether retry is worthwhile, is what lets the agent respond differently to each.",
+   dep:"Your tools from the first task.", time:"3–4 hours",
+   tip:"Prove the difference in behaviour: it retries the timeout, explains the policy block, asks for clarification on bad input.",
+   links:[L.mcpSite, L.toolRef]},
+  {id:"t53", label:"Add a PreToolUse hook enforcing one business rule", pill:"build",
+   why:"The architectural point of the whole project: a prompt instruction is a strong tendency, a hook is a guarantee. When a wrong figure is a compliance problem, a strong tendency is not sufficient.",
+   dep:"MCP Advanced Topics.", time:"3–4 hours",
+   tip:"Suggested rule — every figure reported must come from a retrieved document, never from model memory.",
+   links:[L.ccHooks]},
+  {id:"t54", label:"Test with a bundled three-part question", pill:"build",
+   why:"Multi-part requests are where naive agents quietly fail, answering the first part and dropping the rest. Verifying decomposition and synthesis proves the loop actually holds state.",
+   dep:"Working agent.", time:"1–2 hours",
+   links:[L.console]},
+  {id:"t55", label:"Record failure-mode transcripts into demos/", pill:"build",
+   why:"Anyone can show a working happy path. Transcripts of the hook blocking a call, a transient retry succeeding, and a clean escalation are what demonstrate you designed for reality.",
+   dep:"All the above.", time:"2 hours"},
+  {id:"t56", label:"Write the ADR: hook versus stronger prompt",
+   why:"Records the judgment behind the build. This is the artifact an interviewer reads to find out whether you can reason about reliability or just wire things together.",
+   dep:"The hook working.", time:"45 minutes",
+   links:[["read","Architecture decision records","https://adr.github.io/"]]}
+]},
+
+{ id:"p2", name:"Project 2 — Repo configuration", weeks:"Week 8",
+  note:"The cheapest project to build and the one most likely to get read.",
+  tasks:[
+  {id:"t60", label:"Write the project CLAUDE.md", pill:"build",
+   why:"Establishes the configuration hierarchy in practice: project-level instructions are shared with everyone who clones, personal ones are not. Confusing the two is the single most common real-world mistake.",
+   dep:"Claude Code in Action.", time:"1–2 hours",
+   tip:"Keep it short. Resist writing a manual — universal standards only.",
+   links:[L.ccMemory, L.ccDocs]},
+  {id:"t61", label:"Split guidance into .claude/rules/ with path globs", pill:"build",
+   why:"Glob-scoped rules beat per-directory config exactly when the relevant files are scattered across the tree. Setting up test files as **/*.test.py forces that scenario, which is a tested objective.",
+   dep:"CLAUDE.md written.", time:"2–3 hours",
+   links:[L.ccMemory]},
+  {id:"t62", label:"Add an @import for a standards file", pill:"build",
+   why:"Keeps the root file modular rather than sprawling, and demonstrates you understand configuration as something a team has to maintain.",
+   dep:"Rules in place.", time:"30 minutes",
+   links:[L.ccMemory]},
+  {id:"t63", label:"Write two project-scoped slash commands", pill:"build",
+   why:"Version-controlled commands are how a team's workflow becomes shared rather than tribal. This is the feature colleagues notice first.",
+   dep:"Claude Code in Action.", time:"1–2 hours",
+   links:[L.ccDocs]},
+  {id:"t64", label:"Write one skill using context: fork and allowed-tools", pill:"build",
+   why:"Context forking isolates verbose work so it does not clog the main conversation — the reason to use it is a context-management decision, which is its own exam domain.",
+   dep:"Introduction to agent skills.", time:"2–3 hours",
+   tip:"Pick something genuinely verbose, like a codebase survey, so the isolation is doing real work.",
+   links:[L.ccDocs, L.ccCosts]},
+  {id:"t65", label:"Configure .mcp.json with env var expansion", pill:"build",
+   why:"Committing a config that references a variable rather than the secret itself is the difference between a shareable repo and a security incident. It also demonstrates the project-versus-personal scoping split.",
+   dep:"Your MCP server from Project 1.", time:"1–2 hours",
+   links:[L.mcpSite, L.ccDocs]},
+  {id:"t66", label:"Add the CI review job using -p and --json-schema", pill:"build",
+   why:"Headless mode is how these tools reach production, and the structured output flags are what make results parseable by a pipeline rather than a human.",
+   dep:"A GitHub repo with Actions enabled.", time:"3–5 hours",
+   tip:"Run the review in a separate instance from whatever generated the code. A model carrying its own generation context is measurably worse at questioning its own decisions — and say so in the README.",
+   links:[L.ccDocs, ["read","GitHub Actions — workflow syntax","https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions"], L.ghBilling, L.ccCosts]},
+  {id:"t67", label:"Write the ADR: configuration hierarchy",
+   why:"Documents which instructions live at user level, which at project level, which behind a glob, and what breaks when someone gets it wrong. Directly useful to any team you join.",
+   dep:"Configuration complete.", time:"45 minutes",
+   links:[["read","Architecture decision records","https://adr.github.io/"], L.ccMemory]}
+]},
+
+{ id:"p3", name:"Project 3 — Extraction pipeline", weeks:"Weeks 9–10",
+  note:"Structured data out of messy documents, validated, with the uncertain cases routed to a human.",
+  tasks:[
+  {id:"t70", label:"Define the extraction schema with nullable fields", pill:"build",
+   why:"A required field the source does not contain pressures the model into inventing something plausible. Making fields nullable gives it permission to say the information is not there — the most useful single lesson in the project.",
+   dep:"Building with the Claude API.", time:"3–4 hours",
+   tip:"Include an enum with an 'other' value plus a detail string. Real documents always contain a case you did not anticipate.",
+   links:[L.toolUse, L.pydantic, ["read","JSON Schema — understanding the spec","https://json-schema.org/understanding-json-schema"]]},
+  {id:"t71", label:"Build the validation-retry loop", pill:"build",
+   why:"Retrying blindly burns money on failures that will never succeed. Tracking which error types recover — format and structure — versus which do not — missing source information — is the judgment being tested.",
+   dep:"Schema defined. A validation library such as Pydantic.", time:"4–5 hours",
+   tip:"Send back the document, the failed extraction, and the specific validation error. Not just 'try again'.",
+   links:[L.pydantic, L.costDocs]},
+  {id:"t72", label:"Add semantic checks the schema cannot catch", pill:"build",
+   why:"A strict schema eliminates syntax errors, not arithmetic ones. Extracting a calculated total alongside a stated total and flagging mismatches is where extraction becomes trustworthy.",
+   dep:"Retry loop working.", time:"3–4 hours",
+   links:[L.pydantic]},
+  {id:"t73", label:"Add few-shot examples across document structures", pill:"build",
+   why:"Examples outperform longer instructions when output format is inconsistent. Spanning a figure in a table, in prose, and in a footnote covers the variation that actually causes failures.",
+   dep:"A sample of real documents.", time:"2–3 hours",
+   links:[L.buildOverview]},
+  {id:"t74", label:"Run 100 documents through the Batches API", pill:"build",
+   why:"Batch processing halves cost and suits overnight work, but has no latency guarantee — so knowing when it is the wrong choice matters as much as knowing how to use it. Handling failures by custom_id is the practical skill.",
+   dep:"Working extraction pipeline.", time:"4–6 hours",
+   tip:"Note in the README why batch suits this and would not suit a blocking pre-merge check.",
+   links:[L.buildOverview, L.console, L.usageApi]},
+  {id:"t75", label:"Publish accuracy segmented by field and document type", pill:"build",
+   why:"A headline 97% routinely conceals a field sitting at 60%. Reporting by segment is the difference between a metric that reassures and one that informs — and it underpins every human-review decision you make.",
+   dep:"Batch results.", time:"3–4 hours",
+   tip:"Highlight your worst segment rather than burying it. Publishing your own worst number is a strong signal.",
+   links:[L.usageApi]}
+]},
+
+{ id:"p4", name:"Project 4 — Research pipeline", weeks:"Weeks 11–13",
+  note:"A coordinator delegating to subagents. The exam's heaviest domain, and it composes everything before it.",
+  tasks:[
+  {id:"t80", label:"Build the coordinator and two subagents", pill:"build",
+   why:"Hub-and-spoke gives you one place to handle errors and observe what happened. The coordinator needs Task in its allowed tools, and each subagent needs its context passed explicitly — they inherit nothing.",
+   dep:"Introduction to subagents. Projects 1 and 3 complete.", time:"6–8 hours",
+   links:[L.ccDocs, L.toolUse, L.ccCosts]},
+  {id:"t81", label:"Get parallel execution and measure the latency delta", pill:"build",
+   why:"Multiple Task calls in one coordinator response run concurrently. Measuring the difference against sequential turns an architectural claim into a number you can put in a README.",
+   dep:"Coordinator working.", time:"2–3 hours",
+   links:[L.toolUse, L.usageApi]},
+  {id:"t82", label:"Keep claim, evidence, source and date separate", pill:"build",
+   why:"Provenance is easy to have and easy to lose — it usually evaporates during synthesis. Structuring subagent output so attribution survives is the point of the exercise.",
+   dep:"Subagents returning results.", time:"3–4 hours",
+   links:[L.buildOverview]},
+  {id:"t83", label:"Simulate a subagent timeout and handle it richly", pill:"build",
+   why:"A coordinator given only 'unavailable' has nothing to work with. Failure type, attempted query, partial results and alternatives let it proceed with partial coverage and annotate the gap honestly.",
+   dep:"Error patterns from Project 1.", time:"3–4 hours",
+   links:[L.mcpSite, L.toolRef]},
+  {id:"t84", label:"Feed it two sources with conflicting figures", pill:"build",
+   why:"Correct behaviour is to preserve both with attribution and flag the conflict, not silently pick one. Publication dates matter — two figures from different years are not a contradiction, and the system should be able to tell.",
+   dep:"Attribution surviving synthesis.", time:"3–4 hours"},
+  {id:"t85", label:"Force the too-narrow decomposition bug, then fix it", pill:"build",
+   why:"Every subagent reports success while the report misses half the subject. It is the most architecturally interesting failure in the plan because nothing errors — and the fix, an iterative refinement loop where the coordinator checks its own output for gaps, is genuinely non-obvious.",
+   dep:"Full pipeline working.", time:"6–8 hours",
+   links:[L.ccDocs, L.usageApi]},
+  {id:"t86", label:"Write the retrospective on that bug",
+   why:"The strongest single piece of writing you will produce here. A system where every component succeeds and the whole thing still fails is exactly what architects get hired to anticipate.",
+   dep:"The fix implemented.", time:"2 hours",
+   links:[["read","Architecture decision records","https://adr.github.io/"]]}
+]},
+
+{ id:"s5", name:"Deployment surface", weeks:"Optional",
+  note:"Out of scope for the exam. In scope for the job.",
+  tasks:[
+  {id:"t90", label:"Course — Claude with Amazon Bedrock", pill:"opt",
+   why:"Explicitly excluded from CCAR-F, but it is where a large share of enterprise Claude workloads actually run. Worth taking if your target clients are on AWS.",
+   dep:"Stage 02 complete.", time:"2–3 hours",
+   links:[["read","Claude with Amazon Bedrock","https://anthropic.skilljar.com/claude-in-amazon-bedrock"],
+          ["read","Bedrock — Claude tool use","https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters-anthropic-claude-messages-tool-use.html"]]},
+  {id:"t91", label:"Course — Claude on Google Cloud", pill:"opt",
+   why:"The same argument for the other major platform. Take whichever matches the roles you are pursuing rather than both.",
+   dep:"Stage 02 complete.", time:"2–3 hours",
+   links:[["read","Claude on Google Cloud","https://anthropic.skilljar.com/claude-with-google-vertex"], L.models]},
+  {id:"t92", label:"Course — Introduction to Claude Cowork", pill:"opt",
+   why:"Relevant if you will advise on rollouts to non-developers, which is a common part of the architect role and rarely covered elsewhere.",
+   dep:"None.", time:"1 hour",
+   links:[["read","Introduction to Claude Cowork","https://anthropic.skilljar.com/introduction-to-claude-cowork"]]}
+]},
+
+{ id:"s6", name:"Sit the exam", weeks:"Week 14+",
+  note:"Everything here needs partner-network affiliation. The work above does not.",
+  tasks:[
+  {id:"ta0", label:"Secure a partner-network affiliation", pill:"gate",
+   why:"The hard gate. Exams are sold to organizations in the Claude Partner Network, not individuals — so employment, a contract, or your own qualifying entity is the prerequisite, and it is the slowest item on the list.",
+   dep:"The leads list from week zero. Ideally a completed portfolio to lead with.", time:"Unpredictable — start early",
+   links:[L.partnerCerts, L.certBlog]},
+  {id:"ta1", label:"Take the Partner Academy prep course", pill:"gate",
+   why:"Aligns your preparation with the exam's specific framing and question style, which differs from the public courses.",
+   dep:"Partner affiliation.", time:"4–8 hours",
+   links:[["read","Certification exam prep courses","https://anthropic-partners.skilljar.com/page/claude-certification-exam-prep-courses"], L.partnerCerts]},
+  {id:"ta2", label:"Work the four exam-guide prep exercises and 12 sample questions",
+   why:"The sample questions come with explanations, which makes them the most efficient calibration available. If your project work went well these should feel like review rather than revision.",
+   dep:"Projects 1–4 complete.", time:"4–6 hours",
+   links:[L.examGuide]},
+  {id:"ta3", label:"Register and sit CCAR-F — $125", pill:"gate",
+   why:"The credential itself. Sixty items, 120 minutes, four of six scenarios, 720 out of 1,000 to pass, valid twelve months with free on-time renewal.",
+   dep:"Everything above. Partner affiliation for purchase.", time:"120 minutes",
+   links:[["read","CCAR-F registration and exam page","https://anthropic-partners.skilljar.com/claude-certified-architect-foundations-certification"], L.pearson]},
+  {id:"ta4", label:"Advance to CCAR-P — $175", pill:"opt",
+   why:"Integration architecture, governance and evaluation at enterprise scale. Anthropic's stated progression is Foundations first, so this is a later-year goal rather than a stretch target.",
+   dep:"CCAR-F passed.", time:"Plan a further 8–12 weeks",
+   links:[["read","CCAR-P registration and exam page","https://anthropic-partners.skilljar.com/claude-certified-architect-professional-certification"]]}
+]}
+];
+
+const ALL = PLAN.flatMap(s => s.tasks.map(t => t.id));
+let done = new Set(), notes = {}, open = new Set(), saveTimer = null;
+
+function setStatus(t){ document.getElementById("status").textContent = t; }
+
+let storageOK = true, backend = "none";
+
+/* Storage adapter.
+   Inside the Claude app the host injects window.storage. A downloaded copy running
+   from file:// has no host, so it falls back to the browser's own localStorage.
+   Neither is guaranteed, so a third path leaves the tool usable with export/import. */
+const Store = {
+  async detect(){
+    if(window.storage && typeof window.storage.get === "function"){
+      try{
+        await window.storage.set(KEY + "_probe", "1");
+        await window.storage.delete(KEY + "_probe");
+        backend = "host"; return;
+      }catch(e){ this.lastErr = e; }
+    }
+    try{
+      const k = KEY + "_probe";
+      window.localStorage.setItem(k, "1");
+      window.localStorage.removeItem(k);
+      backend = "local"; return;
+    }catch(e){ this.lastErr = this.lastErr || e; }
+    backend = "none";
+  },
+  async read(){
+    if(backend === "host"){
+      const r = await window.storage.get(KEY);
+      return r && r.value ? r.value : null;
+    }
+    if(backend === "local") return window.localStorage.getItem(KEY);
+    return null;
+  },
+  async write(v){
+    if(backend === "host"){ await window.storage.set(KEY, v); return; }
+    if(backend === "local"){ window.localStorage.setItem(KEY, v); return; }
+    throw new Error("no storage backend");
+  },
+  async wipe(){
+    if(backend === "host"){ await window.storage.delete(KEY); return; }
+    if(backend === "local"){ window.localStorage.removeItem(KEY); return; }
+  }
+};
+
+function degrade(err){
+  storageOK = false;
+  document.getElementById("banner").classList.add("on");
+  const d = document.getElementById("diag");
+  if(d){
+    const e = err || Store.lastErr;
+    let detail;
+    if(!window.storage && backend === "none") detail = "no window.storage and no usable localStorage";
+    else if(e) detail = (e.name || "Error") + ": " + (e.message || String(e));
+    else detail = "storage call rejected without a message";
+    d.textContent = "Diagnostic — " + detail;
+  }
+  setStatus("Not saving — export before you close");
+}
+
+function where(){ return backend === "host" ? "in the Claude app" : "in this browser"; }
+
+async function load(){
+  await Store.detect();
+  if(backend === "none"){ degrade(); render(); return; }
+  try{
+    const raw = await Store.read();
+    if(raw){
+      const p = JSON.parse(raw);
+      done = new Set(p.done || []); notes = p.notes || {};
+      setStatus((p.updated ? "Last updated " + new Date(p.updated).toLocaleDateString() : "Progress restored") + " — saved " + where());
+    } else setStatus("New route card — saving " + where());
+  }catch(e){ setStatus("New route card — saving " + where()); }
+  render();
+}
+
+async function writeState(attempt){
+  if(!storageOK) return;
+  try{
+    await Store.write(JSON.stringify({done:[...done], notes, updated:Date.now()}));
+    setStatus("Saved " + new Date().toLocaleTimeString() + " " + where());
+  }catch(e){
+    if(!attempt){
+      // Usually a rate limit from writes landing too close together. Back off and retry once.
+      setStatus("Retrying save…");
+      setTimeout(() => writeState(1), 1800);
+    } else degrade(e);
+  }
+}
+
+// Every mutation routes through here. Coalescing them into one delayed write keeps
+// rapid checkbox clicks from firing a burst of storage calls.
+function queueSave(){ clearTimeout(saveTimer); saveTimer = setTimeout(() => writeState(0), 900); }
+
+const CATNAME = {install:"Install", read:"Read", watch:"Spend"};
+
+function linksHTML(list){
+  if(!list || !list.length) return "";
+  const order = {install:0, read:1, watch:2};
+  const sorted = list.slice().sort((a,b) => order[a[0]] - order[b[0]]);
+  return '<div class="field"><dt>Where to go</dt><div class="links">' +
+    sorted.map(l =>
+      '<a class="lk ' + l[0] + '" href="' + l[2] + '" target="_blank" rel="noopener noreferrer">' +
+      '<span class="cat">' + CATNAME[l[0]] + '</span><span>' + l[1] + '</span></a>'
+    ).join("") + '</div></div>';
+}
+
+function detailHTML(t){
+  return '<div class="detail">' +
+    '<div class="field"><dt>Why this matters</dt><dd>' + t.why + '</dd></div>' +
+    '<div class="field"><dt>Depends on</dt><dd>' + t.dep + '</dd></div>' +
+    '<div class="field"><dt>Rough time</dt><dd class="clock">' + t.time + '</dd></div>' +
+    (t.tip ? '<div class="field"><dt>Worth knowing</dt><dd>' + t.tip + '</dd></div>' : '') +
+    linksHTML(t.links) +
+    '<div class="field"><dt>Your notes</dt>' +
+    '<textarea data-note="' + t.id + '" placeholder="Questions, blockers, links, what you actually did…"></textarea></div>' +
+    '</div>';
+}
+
+function render(){
+  const app = document.getElementById("app");
+  app.innerHTML = "";
+  const spine = document.createElement("div");
+  spine.className = "spine";
+
+  PLAN.forEach(stage => {
+    const ids = stage.tasks.map(t => t.id);
+    const complete = ids.every(i => done.has(i));
+    const started = ids.some(i => done.has(i));
+    const el = document.createElement("div");
+    el.className = "stage" + (complete ? " done" : (started || stage.active ? " active" : ""));
+    el.innerHTML = '<div class="node"></div><div class="stage-head"><h3>' + stage.name +
+      '</h3><span class="weeks">' + stage.weeks + '</span></div><p class="stage-note">' + stage.note + '</p>';
+
+    const ul = document.createElement("ul");
+    ul.className = "tasks";
+    stage.tasks.forEach(t => {
+      const isOpen = open.has(t.id);
+      const li = document.createElement("li");
+      li.className = "task" + (done.has(t.id) ? " checked" : "") + (isOpen ? " open" : "");
+      li.innerHTML =
+        '<div class="row">' +
+          '<input type="checkbox" id="cb-' + t.id + '"' + (done.has(t.id) ? " checked" : "") + ' aria-label="Mark complete">' +
+          '<button class="expand" aria-expanded="' + isOpen + '" data-x="' + t.id + '">' + t.label + '</button>' +
+          (notes[t.id] && notes[t.id].trim() && !isOpen ? '<span class="dot" title="Has notes"></span>' : '') +
+          (t.pill ? '<span class="pill ' + t.pill + '">' + (t.pill === "gate" ? "gated" : t.pill === "opt" ? "optional" : "build") + '</span>' : '') +
+          '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 5l7 7-7 7"/></svg>' +
+        '</div>' + (isOpen ? detailHTML(t) : '');
+      ul.appendChild(li);
+    });
+    el.appendChild(ul);
+    spine.appendChild(el);
+  });
+
+  app.appendChild(spine);
+
+  app.querySelectorAll("input[type=checkbox]").forEach(cb => {
+    cb.addEventListener("change", () => {
+      const id = cb.id.slice(3);
+      cb.checked ? done.add(id) : done.delete(id);
+      render(); queueSave();
+    });
+  });
+  app.querySelectorAll(".expand").forEach(b => {
+    b.addEventListener("click", () => {
+      const id = b.dataset.x;
+      open.has(id) ? open.delete(id) : open.add(id);
+      render();
+    });
+  });
+  app.querySelectorAll("textarea[data-note]").forEach(ta => {
+    ta.value = notes[ta.dataset.note] || "";
+    ta.addEventListener("input", () => { notes[ta.dataset.note] = ta.value; queueSave(); });
+  });
+
+  document.getElementById("done").textContent = done.size;
+  document.getElementById("total").textContent = ALL.length;
+  document.getElementById("fill").style.width = (done.size / ALL.length * 100) + "%";
+}
+
+document.getElementById("exportBtn").addEventListener("click", () => {
+  const blob = new Blob([JSON.stringify({done:[...done], notes, updated:Date.now()}, null, 2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "ccar-route-card-" + new Date().toISOString().slice(0,10) + ".json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+  setStatus("Exported " + new Date().toLocaleTimeString());
+});
+
+document.getElementById("importBtn").addEventListener("click", () => document.getElementById("importFile").click());
+document.getElementById("importFile").addEventListener("change", ev => {
+  const f = ev.target.files && ev.target.files[0];
+  if(!f) return;
+  const fr = new FileReader();
+  fr.onload = () => {
+    try{
+      const p = JSON.parse(fr.result);
+      done = new Set(p.done || []); notes = p.notes || {};
+      render(); queueSave();
+      setStatus("Imported " + done.size + " completed tasks");
+    }catch(e){ setStatus("That file could not be read as a route card export."); }
+  };
+  fr.readAsText(f);
+  ev.target.value = "";
+});
+
+// Flush anything still sitting in the debounce window.
+window.addEventListener("beforeunload", () => { if(saveTimer && storageOK){ clearTimeout(saveTimer); writeState(0); } });
+
+document.getElementById("expandAll").addEventListener("click", () => { ALL.forEach(i => open.add(i)); render(); });
+document.getElementById("collapseAll").addEventListener("click", () => { open.clear(); render(); });
+document.getElementById("reset").addEventListener("click", async () => {
+  if(!confirm("Clear all checkmarks and notes? This cannot be undone.")) return;
+  done = new Set(); notes = {}; open.clear(); render();
+  try{ await Store.wipe(); setStatus("Cleared. Starting fresh."); }
+  catch(e){ setStatus("Cleared on screen."); }
+});
+
+load();
+</script>
+</body>
+</html>
