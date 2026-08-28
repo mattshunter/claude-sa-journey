@@ -4,10 +4,10 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>it.icanhazmatt</groupId>
-  <artifactId>streaming-responses</artifactId>
+  <artifactId>prompt-engineering</artifactId>
   <version>1.0-SNAPSHOT</version>
 
-  <name>streaming-responses</name>
+  <name>prompt-engineering</name>
   <url>https://github.com/mattshunter/claude-sa-journey</url>
 
   <properties>

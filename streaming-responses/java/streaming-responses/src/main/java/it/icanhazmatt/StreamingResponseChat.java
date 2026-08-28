@@ -56,7 +56,7 @@ public class StreamingResponseChat {
                 if (event.isContentBlockDelta()) {
                     event.asContentBlockDelta().delta().text().ifPresent(textDelta -> {
                         reply(textDelta.text());
-                        System.out.flush();
+                        writer.flush();
                     });
                 }
             });
@@ -78,11 +78,12 @@ public class StreamingResponseChat {
         var messages = new ArrayList<MessageParam>();
         var console = System.console();
         var finished = false;
-        writer.println("What can I help you with today?\n (type exit or stop to end our conversation.");
         var text = "";
         
+        writer.println("What can I help you with today?\n (type exit or stop to end our conversation.");
+        
         do {
-            text = console.readLine("> ");
+            text = console.readLine("\n> ");
             
             if((text.equals("exit") || text.equals("stop"))) {
                 finished = true;
@@ -97,12 +98,8 @@ public class StreamingResponseChat {
         } while(!finished);
     }
 
-    private void reply(TextBlock textBlock) {
-        reply(textBlock.text());
-    }
-
     private void reply(String text) {
-        writer.println(text);
+        writer.print(text);
     }
 
     public static void main(String...args) {
