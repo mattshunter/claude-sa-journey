@@ -104,7 +104,7 @@ build/
 !gradle-wrapper.jar
 
 # IDE specific metadata (Eclipse / IntelliJ / NetBeans / VSCode)
-.code-workspace
+*.code-workspace
 .settings/
 .classpath
 .project
