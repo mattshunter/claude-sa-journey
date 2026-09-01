@@ -103,7 +103,8 @@ buildNumber.properties
 build/
 !gradle-wrapper.jar
 
-# IDE specific metadata (Eclipse / IntelliJ / NetBeans)
+# IDE specific metadata (Eclipse / IntelliJ / NetBeans / VSCode)
+.code-workspace
 .settings/
 .classpath
 .project
